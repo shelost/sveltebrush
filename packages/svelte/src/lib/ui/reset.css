@@ -1,0 +1,9 @@
+/* Shield Sveltebrush UI from host-page element styles (e.g. `span { color: … }`)
+   while staying below any class-level rule inside the components. */
+.sb-ui :where(span, p, label, li, h1, h2, h3, strong, em) {
+	color: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+	margin: 0;
+}

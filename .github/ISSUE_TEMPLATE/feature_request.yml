@@ -1,0 +1,15 @@
+name: Feature request
+description: A brush, technique, integration or API you would like.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: For brushes and techniques, references to real calligraphy (photos, names of strokes or tools) are very welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What would you use it for?

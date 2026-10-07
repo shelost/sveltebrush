@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>Sveltebrush without a build step</title>
+		<style>
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: #f1e8d6;
+				font-family: system-ui, sans-serif;
+			}
+			canvas {
+				position: fixed;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				touch-action: none;
+			}
+			form {
+				position: fixed;
+				left: 16px;
+				right: 16px;
+				bottom: max(16px, env(safe-area-inset-bottom));
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			button,
+			select,
+			input {
+				font: inherit;
+				padding: 8px 14px;
+				border: 1px solid #0002;
+				border-radius: 999px;
+				background: #fffc;
+				color: #16110d;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="paper"></canvas>
+		<form id="controls">
+			<select id="brush" aria-label="Brush"></select>
+			<input id="text" value="永 바람" aria-label="Text to write" />
+			<button type="submit">Write</button>
+			<button type="button" id="undo">Undo</button>
+			<button type="button" id="clear">Clear</button>
+			<button type="button" id="download">Download PNG</button>
+		</form>
+
+		<script type="module">
+			// Served from npm by jsDelivr, so this page works once @sveltebrush/core is published.
+			import { BRUSHES, Brush, Surface, createWriter, freehand } from 'https://cdn.jsdelivr.net/npm/@sveltebrush/core@0.1/+esm';
+
+			const PAPER = '#f1e8d6';
+			const canvas = document.getElementById('paper');
+			const surface = new Surface(canvas);
+			surface.resize();
+			new ResizeObserver(() => surface.resize()).observe(canvas);
+
+			const brush = new Brush(surface, BRUSHES[0]);
+			freehand(canvas, brush, { infinite: true });
+			const writer = createWriter(surface);
+
+			const picker = document.getElementById('brush');
+			picker.append(...BRUSHES.map((preset) => new Option(preset.name, preset.id)));
+			picker.onchange = () => brush.set(BRUSHES.find((preset) => preset.id === picker.value));
+
+			document.getElementById('controls').onsubmit = (event) => {
+				event.preventDefault();
+				writer.write(document.getElementById('text').value, {
+					width: surface.width,
+					height: surface.height,
+					brush: brush.preset,
+					padding: { top: 48, right: 48, bottom: 120, left: 48 }
+				});
+			};
+
+			document.getElementById('undo').onclick = () => {
+				writer.stop();
+				surface.undo();
+			};
+
+			document.getElementById('clear').onclick = () => {
+				writer.stop();
+				surface.clear();
+			};
+
+			document.getElementById('download').onclick = async () => {
+				const blob = await surface.toBlob({ background: PAPER });
+				if (!blob) return;
+				const link = document.createElement('a');
+				link.href = URL.createObjectURL(blob);
+				link.download = 'sveltebrush.png';
+				link.click();
+				setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+			};
+		</script>
+	</body>
+</html>

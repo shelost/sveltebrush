@@ -1,0 +1,53 @@
+{
+	"name": "@sveltebrush/core",
+	"version": "0.1.0",
+	"description": "Framework-free ink brush engine and animated East Asian calligraphy for the HTML canvas.",
+	"license": "MIT",
+	"author": "Heewon",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shelost/sveltebrush.git",
+		"directory": "packages/core"
+	},
+	"homepage": "https://github.com/shelost/sveltebrush#readme",
+	"bugs": "https://github.com/shelost/sveltebrush/issues",
+	"keywords": [
+		"canvas",
+		"brush",
+		"ink",
+		"calligraphy",
+		"hangul",
+		"hanzi",
+		"kanji",
+		"sumi-e",
+		"drawing",
+		"freehand"
+	],
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE",
+		"NOTICE.md"
+	],
+	"scripts": {
+		"build": "rm -rf dist && tsc -p tsconfig.build.json",
+		"check": "tsc -p tsconfig.json",
+		"test": "vitest run",
+		"test:update": "UPDATE_SNAPSHOTS=1 vitest run"
+	},
+	"devDependencies": {
+		"@napi-rs/canvas": "^1.0.10",
+		"vitest": "^5.0.3"
+	}
+}

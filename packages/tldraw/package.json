@@ -1,0 +1,58 @@
+{
+	"name": "@sveltebrush/tldraw",
+	"version": "0.1.0",
+	"description": "An ink brush and calligraphy shape and tool for tldraw, powered by Sveltebrush.",
+	"license": "MIT",
+	"author": "Heewon",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shelost/sveltebrush.git",
+		"directory": "packages/tldraw"
+	},
+	"homepage": "https://github.com/shelost/sveltebrush#readme",
+	"bugs": "https://github.com/shelost/sveltebrush/issues",
+	"keywords": [
+		"tldraw",
+		"canvas",
+		"brush",
+		"ink",
+		"calligraphy",
+		"drawing",
+		"whiteboard"
+	],
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "rm -rf dist && tsc -p tsconfig.build.json",
+		"check": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"@sveltebrush/core": "^0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^18.2.0 || ^19.0.0",
+		"react-dom": "^18.2.0 || ^19.0.0",
+		"tldraw": ">=5.0.0 <6"
+	},
+	"devDependencies": {
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"react": "^19.3.0",
+		"react-dom": "^19.3.0",
+		"tldraw": "^5.5.2"
+	}
+}

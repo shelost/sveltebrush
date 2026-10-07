@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+.svelte-kit
+.vite
+coverage
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+!.env.example
+.yarn/*
+!.yarn/releases
+yarn.lock
+packages/core/test/__output__

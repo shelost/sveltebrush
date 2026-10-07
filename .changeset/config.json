@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/@changesets/config@4.0.1/schema.json",
+	"changelog": ["@changesets/changelog-github", { "repo": "shelost/sveltebrush" }],
+	"commit": false,
+	"fixed": [["@sveltebrush/core", "sveltebrush", "@sveltebrush/tldraw"]],
+	"linked": [],
+	"access": "public",
+	"baseBranch": "main",
+	"updateInternalDependencies": "patch",
+	"ignore": []
+}

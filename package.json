@@ -1,0 +1,41 @@
+{
+	"name": "sveltebrush-monorepo",
+	"private": true,
+	"type": "module",
+	"description": "Ink-brush painting and animated East Asian calligraphy for the HTML canvas.",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shelost/sveltebrush.git"
+	},
+	"workspaces": [
+		"packages/core",
+		"packages/svelte",
+		"packages/tldraw",
+		"apps/demo",
+		"apps/tldraw-demo"
+	],
+	"scripts": {
+		"dev": "npm run dev -w demo",
+		"dev:tldraw": "npm run dev -w tldraw-demo",
+		"build": "npm run build -w @sveltebrush/core && npm run build -w sveltebrush && npm run build -w @sveltebrush/tldraw",
+		"build:site": "npm run build -w demo && npm run build -w tldraw-demo",
+		"check": "npm run check --workspaces --if-present",
+		"test": "npm run test --workspaces --if-present",
+		"format": "prettier --write .",
+		"lint": "prettier --check .",
+		"changeset": "changeset",
+		"version-packages": "changeset version && npm install --package-lock-only",
+		"release": "npm run build && changeset publish"
+	},
+	"devDependencies": {
+		"@changesets/changelog-github": "^1.0.1",
+		"@changesets/cli": "^3.0.3",
+		"prettier": "^3.9.9",
+		"prettier-plugin-svelte": "^4.1.1",
+		"typescript": "~6.0.3"
+	},
+	"engines": {
+		"node": ">=22.17"
+	}
+}

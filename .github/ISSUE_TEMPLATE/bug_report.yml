@@ -1,0 +1,41 @@
+name: Bug report
+description: Something renders wrong, crashes or behaves unexpectedly.
+labels: [bug]
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - '@sveltebrush/core'
+        - sveltebrush (Svelte components)
+        - '@sveltebrush/tldraw'
+        - Demo site
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: Screenshots help a lot for rendering issues.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps or code to reproduce
+      description: A saved document (Export → Save project) reproduces most drawing issues exactly.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, OS and input device
+      placeholder: Chrome 140 on macOS, Apple Pencil on iPad, …

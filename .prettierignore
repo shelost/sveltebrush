@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+.svelte-kit
+package-lock.json
+yarn.lock
+packages/core/test/__snapshots__
+packages/core/test/__output__
+.changeset/*.md
+CHANGELOG.md

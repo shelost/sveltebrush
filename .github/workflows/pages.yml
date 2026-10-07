@@ -1,0 +1,55 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TLDRAW_LICENSE_KEY: ${{ secrets.TLDRAW_LICENSE_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build the demo
+        run: npm run build -w demo
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+      # tldraw blanks the editor in production builds without a licence key.
+      - name: Build the tldraw demo
+        if: env.TLDRAW_LICENSE_KEY != ''
+        run: |
+          npm run build -w tldraw-demo
+          cp -R apps/tldraw-demo/dist apps/demo/build/tldraw
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/tldraw/
+          VITE_TLDRAW_LICENSE_KEY: ${{ env.TLDRAW_LICENSE_KEY }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/demo/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
