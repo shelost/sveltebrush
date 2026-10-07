@@ -53,6 +53,7 @@ export { clamp, lerp, smoothstep, hash, random, newSeed, noise } from './math.js
  * @typedef {import('./surface.js').SurfaceOptions} SurfaceOptions
  * @typedef {import('./seal.js').Seal} Seal
  * @typedef {import('./writer.js').WriteOptions} WriteOptions
+ * @typedef {import('./writer.js').WriterTip} WriterTip
  * @typedef {import('./writer.js').Cell} Cell
  * @typedef {import('./glyphs.js').Glyph} Glyph
  * @typedef {import('./hangul.js').Stroke} GlyphStroke

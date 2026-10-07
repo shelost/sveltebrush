@@ -99,6 +99,9 @@ const points = getStrokePoints(samples); // the same for a whole recorded stroke
 | `weight`   | `1`      | Stroke weight                                    |
 | `brush`    | current  | Brush settings for this write                    |
 | `seal`     | none     | Text for a red seal (落款) pressed after writing |
+| `lead`     | `0`      | ms to wait before the first stroke               |
+
+`writer.tip` is live: `{ writing, down, x, y, pressure }` in sheet px. Between strokes it reports the start of the next stroke, so anything that draws a hand or a brush over the writing can move there ahead of time.
 
 Hangul is composed from jamo by the library. Chinese characters use stroke data from `hanzi-writer-data`, fetched from jsDelivr the first time each character is written. Call `setGlyphSource(url)` to self-host it; see [NOTICE.md](./NOTICE.md) for its licence. `stamp(ctx, seal)` presses a seal anywhere.
 

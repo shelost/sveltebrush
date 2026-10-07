@@ -1,17 +1,32 @@
 <script module>
-	/** @typedef {'library' | 'studio' | 'write' | 'color' | 'export'} Panel */
+	/** @typedef {'library' | 'studio' | 'write' | 'color' | 'paper' | 'export'} Panel */
 </script>
 
 <script>
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { BRUSHES, INKS, BrushLibrary, BrushStudio, ColorWheel, InkCanvas, Inkstone, Slider, preset, videoType } from 'sveltebrush';
+	import { prefersReducedMotion } from 'svelte/motion';
+	import {
+		BRUSHES,
+		INKS,
+		PAPERS,
+		BrushLibrary,
+		BrushStudio,
+		ColorWheel,
+		InkCanvas,
+		Inkstone,
+		Slider,
+		paperClass,
+		preset,
+		videoType
+	} from 'sveltebrush';
 	import 'sveltebrush/paper.css';
 
 	const PHRASES = ['永', '風林火山', '바람이 분다', '一期一會\n한 번의 만남', '龍', '사랑해'];
-	const PAPER = '#f1e8d6';
 	const GITHUB = 'https://github.com/shelost/sveltebrush';
+	/** How long the writer waits for the red brush to fly in before its first stroke, in ms. */
+	const ARRIVAL = 650;
 
 	const GEAR =
 		'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z';
@@ -48,6 +63,8 @@
 		],
 		save: ['M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z', 'M14 3v5h5', 'M12 11v6', 'm9.5 14.5 2.5 2.5 2.5-2.5'],
 		open: ['M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z', 'M3 10h18'],
+		paper: ['M8 3.5h11v14H8z', 'M5 7v13.5h11'],
+		cube: ['M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z', 'M4 7.5 12 12l8-4.5', 'M12 12v9'],
 		github: [OCTOCAT]
 	};
 	const FILLED = ['play', 'github'];
@@ -61,6 +78,14 @@
 		)
 	);
 	let color = $state(INKS[0].color);
+	let paper = $state(PAPERS[0].id);
+	const tone = $derived(PAPERS.find((entry) => entry.id === paper)?.color ?? PAPERS[0].color);
+
+	/** The 3D brushes and inkstone, loaded with three.js only once they're turned on. */
+	let three = $state(false);
+	const kit = $derived(three ? import('sveltebrush/3d') : null);
+	/** Where the brush in your hand stands in for the pointer. @param {Element} node */
+	const writable = (node) => !!node.closest('.ink-canvas, .sb-ink-tray');
 
 	let ink = $state(1);
 	let history = $state({ undo: 0, redo: 0 });
@@ -119,6 +144,7 @@
 			vertical,
 			speed,
 			weight,
+			lead: three ? ARRIVAL : 0,
 			padding: narrow ? { top: 80, right: 20, bottom: floor, left: 60 } : { top: 84, right: 160, bottom: floor, left: 84 }
 		});
 		if (finished) writing = false;
@@ -140,7 +166,7 @@
 	}
 
 	async function saveImage() {
-		const blob = await canvas?.toBlob({ background: PAPER });
+		const blob = await canvas?.toBlob({ background: tone });
 		if (blob) download(blob, 'sveltebrush.png');
 		panel = null;
 	}
@@ -149,7 +175,7 @@
 		if (!canvas || exporting !== null) return;
 		exporting = 0;
 		try {
-			const result = await canvas.timelapse({ background: PAPER, onprogress: (p) => (exporting = p) });
+			const result = await canvas.timelapse({ background: tone, onprogress: (p) => (exporting = p) });
 			if (result) download(result.blob, `sveltebrush-timelapse.${result.extension}`);
 		} finally {
 			exporting = null;
@@ -242,7 +268,7 @@
 	</svg>
 {/snippet}
 
-<section class={['paper', 'sb-paper', 'sb-ui', { theater }]}>
+<section class={['paper', paperClass(paper), 'sb-ui', { theater, three }]}>
 	<div class="stage" role="presentation" onpointerdown={onstage}>
 		<InkCanvas bind:this={canvas} bind:ink bind:history bind:strokes bind:playing brush={brushes[index]} {color} />
 	</div>
@@ -269,6 +295,19 @@
 				</button>
 				<button type="button" class={{ on: panel === 'color' }} aria-label="Ink colour" title="Ink colour" onclick={() => toggle('color')}>
 					<span class="swatch" style:background={color}></span>
+				</button>
+				<button type="button" class={{ on: panel === 'paper' }} aria-label="Paper" title="Paper" onclick={() => toggle('paper')}>
+					{@render icon('paper')}
+				</button>
+				<button
+					type="button"
+					class={{ on: three }}
+					aria-label="3D brushes"
+					aria-pressed={three}
+					title={three ? '3D brushes on' : '3D brushes'}
+					onclick={() => (three = !three)}
+				>
+					{@render icon('cube')}
 				</button>
 				<button type="button" class={{ on: panel === 'export' }} aria-label="Export" title="Export" onclick={() => toggle('export')}>
 					{@render icon('export')}
@@ -336,7 +375,24 @@
 		</button>
 
 		<aside class="well" aria-label="Ink" in:float={{ x: 32, delay: 160 }} out:float={{ x: 32, duration: 260 }}>
-			<Inkstone level={ink} {color} onload={(amount) => canvas?.load(amount)} onset={(level) => canvas?.dip(level)} />
+			{#if kit}
+				{#await kit then { InkTray }}
+					<div class="tray glass">
+						<InkTray
+							{brushes}
+							bind:selected
+							bind:color
+							{ink}
+							still={prefersReducedMotion.current}
+							onload={(amount) => canvas?.load(amount)}
+							ondip={() => canvas?.dip(1)}
+						/>
+						<p class="readout" aria-live="polite"><strong>{Math.round(ink * 100)}%</strong> {brushes[index].name}</p>
+					</div>
+				{/await}
+			{:else}
+				<Inkstone level={ink} {color} onload={(amount) => canvas?.load(amount)} onset={(level) => canvas?.dip(level)} />
+			{/if}
 		</aside>
 
 		{#if panel === 'library'}
@@ -347,6 +403,25 @@
 			<div class="popover color glass" in:float={{ y: -12, duration: 420 }} out:float={{ y: -12, duration: 200 }}>
 				<h2>Ink colour</h2>
 				<ColorWheel bind:value={color} />
+			</div>
+		{:else if panel === 'paper'}
+			<div class="popover papers glass" in:float={{ y: -12, duration: 420 }} out:float={{ y: -12, duration: 200 }}>
+				<h2 id="paper-heading">Paper</h2>
+				<div role="radiogroup" aria-labelledby="paper-heading">
+					{#each PAPERS as entry (entry.id)}
+						<button
+							type="button"
+							role="radio"
+							aria-checked={paper === entry.id}
+							class={{ on: paper === entry.id }}
+							onclick={() => (paper = entry.id)}
+						>
+							<span class={['sample', paperClass(entry.id)]}></span>
+							<span class="name">{entry.name} <small>{entry.native}</small></span>
+							<small class="about">{entry.description}</small>
+						</button>
+					{/each}
+				</div>
 			</div>
 		{:else if panel === 'export'}
 			<div class="popover export glass" role="menu" in:float={{ y: -12, duration: 420 }} out:float={{ y: -12, duration: 200 }}>
@@ -440,6 +515,15 @@
 		<p class="hint glass" in:fade={{ delay: 400, duration: 400 }} out:fade={{ duration: 200 }}>
 			{playing ? 'Timelapse' : 'Finished'} · Touch the canvas to return
 		</p>
+	{/if}
+
+	{#if kit}
+		{#await kit then { BrushStage, BrushCursor, ScribeBrush }}
+			<BrushStage>
+				<BrushCursor id={selected} {ink} {color} still={prefersReducedMotion.current} over={writable} />
+				<ScribeBrush source={() => canvas?.scribe()} id={selected} {color} still={prefersReducedMotion.current} />
+			</BrushStage>
+		{/await}
 	{/if}
 </section>
 
@@ -702,10 +786,96 @@
 
 	.library,
 	.color,
+	.papers,
 	.export {
 		top: calc(max(14px, env(safe-area-inset-top)) + 60px);
 		right: max(16px, env(safe-area-inset-right));
 		transform-origin: top right;
+	}
+
+	.papers {
+		width: 300px;
+
+		[role='radiogroup'] {
+			display: grid;
+			gap: 4px;
+		}
+
+		button {
+			display: grid;
+			grid-template-columns: 44px 1fr;
+			grid-template-rows: auto auto;
+			column-gap: 12px;
+			align-items: center;
+			padding: 8px;
+			border: none;
+			border-radius: 14px;
+			background: transparent;
+			text-align: left;
+			cursor: pointer;
+
+			&:hover {
+				background: rgb(30 24 19 / 0.06);
+			}
+
+			&.on {
+				background: rgb(30 24 19 / 0.1);
+			}
+		}
+
+		.sample {
+			grid-row: 1 / 3;
+			width: 44px;
+			height: 44px;
+			border-radius: 10px;
+			box-shadow: inset 0 0 0 1px rgb(30 24 19 / 0.12);
+		}
+
+		.name {
+			font-size: 0.88rem;
+			font-weight: 500;
+
+			small {
+				margin-left: 4px;
+				font-family: 'Gowun Batang', serif;
+				font-weight: 400;
+				opacity: 0.55;
+			}
+		}
+
+		.about {
+			font-size: 0.72rem;
+			opacity: 0.55;
+		}
+	}
+
+	/* The 3D brush in your hand is the pointer over the paper and the inkstone. */
+	.three:not(.theater) :global(.ink-canvas),
+	.three :global(.sb-ink-tray canvas) {
+		cursor: none;
+	}
+
+	.tray {
+		display: grid;
+		width: 300px;
+		padding: 4px 4px 8px;
+		border-radius: 20px;
+
+		:global(.sb-ink-tray) {
+			height: 158px;
+		}
+	}
+
+	.readout {
+		margin: 0;
+		font-size: 0.72rem;
+		text-align: center;
+		opacity: 0.65;
+
+		strong {
+			font-variant-numeric: tabular-nums;
+			font-weight: 600;
+		}
 	}
 
 	.library {
@@ -950,13 +1120,23 @@
 			gap: 6px;
 		}
 
+		.tools {
+			min-width: 0;
+			overflow-x: auto;
+			scrollbar-width: none;
+			overscroll-behavior: contain;
+			touch-action: pan-x;
+		}
+
 		.tools button {
+			flex: none;
 			width: 36px;
 			height: 36px;
 		}
 
 		.github,
 		.reveal {
+			flex: none;
 			width: 44px;
 			height: 44px;
 		}
@@ -982,8 +1162,17 @@
 			}
 		}
 
+		.tray {
+			width: 220px;
+
+			:global(.sb-ink-tray) {
+				height: 116px;
+			}
+		}
+
 		.popover.library,
 		.popover.color,
+		.popover.papers,
 		.popover.export,
 		.popover.studio,
 		.popover.write {

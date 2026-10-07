@@ -18,8 +18,15 @@ import { sealHeight } from './seal.js';
  *   speed?: number,
  *   weight?: number,
  *   brush?: Partial<import('./presets.js').BrushPreset>,
- *   seal?: string
+ *   seal?: string,
+ *   lead?: number
  * }} WriteOptions
+ * lead: ms to wait before the first stroke, e.g. while something flies in to write it.
+ *
+ * @typedef {{ writing: boolean, down: boolean, x: number, y: number, pressure: number }} WriterTip
+ * Where the writer's brush is, in sheet px. Between strokes it hovers over the start of the
+ * next one, so anything that draws a hand or a brush over the writing can move there ahead
+ * of time.
  */
 
 const ADVANCE = 1.04;
@@ -161,15 +168,25 @@ function sealFor(text, slot, under) {
  */
 export function createWriter(surface, { color = '#16110d' } = {}) {
 	const brush = new Brush(surface, undefined, { color, record: false });
+	/** @type {WriterTip} */
+	const tip = { writing: false, down: false, x: 0, y: 0, pressure: 0 };
 	let run = 0;
 	let frame = 0;
 	/** @type {((done: boolean) => void) | null} */
 	let settle = null;
 
+	/** Lift the tip over the start of a stroke. @param {{ samples: { x: number, y: number }[] } | undefined} job */
+	function hover(job) {
+		if (!job) return;
+		const [start] = job.samples;
+		Object.assign(tip, { down: false, x: start.x, y: start.y, pressure: 0 });
+	}
+
 	function stop() {
 		run++;
 		cancelFrame(frame);
 		brush.up();
+		tip.writing = tip.down = false;
 		settle?.(false);
 		settle = null;
 	}
@@ -182,7 +199,7 @@ export function createWriter(surface, { color = '#16110d' } = {}) {
 	async function write(text, options) {
 		stop();
 		const id = run;
-		const { speed = 1, weight = 1, seal = '', vertical = false } = options;
+		const { speed = 1, weight = 1, seal = '', vertical = false, lead = 0 } = options;
 		if (options.brush) brush.set(options.brush);
 		const placed = layout(seal ? text.trimEnd() + SEAL : text, options);
 		const anchor = seal ? placed.at(-1) : undefined;
@@ -210,14 +227,17 @@ export function createWriter(surface, { color = '#16110d' } = {}) {
 		return new Promise((done) => {
 			const resolve = (/** @type {boolean} */ value) => {
 				settle = null;
+				tip.writing = tip.down = false;
 				done(value);
 			};
 			settle = resolve;
 			let index = 0;
 			let sample = 0;
 			let elapsed = 0;
-			let pause = 0;
+			let pause = Math.max(0, lead);
 			let last = performance.now();
+			tip.writing = true;
+			hover(jobs[0]);
 
 			const tick = (/** @type {number} */ now) => {
 				if (id !== run) return resolve(false);
@@ -238,6 +258,7 @@ export function createWriter(surface, { color = '#16110d' } = {}) {
 						brush.down(a.x, a.y, a.p, { heading: [b.x - a.x, b.y - a.y] });
 						sample = 1;
 						elapsed = 0;
+						tip.down = true;
 					}
 					elapsed += dt;
 					const duration = 120 + job.length / 0.75;
@@ -246,11 +267,13 @@ export function createWriter(surface, { color = '#16110d' } = {}) {
 						const point = job.samples[sample++];
 						brush.to(point.x, point.y, point.p);
 					}
+					Object.assign(tip, { x: brush.x, y: brush.y, pressure: brush.p });
 					if (sample >= job.samples.length) {
 						brush.up();
 						index++;
 						sample = 0;
 						pause = job.gap;
+						hover(jobs[index]);
 					}
 				}
 				frame = nextFrame(tick);
@@ -259,5 +282,5 @@ export function createWriter(surface, { color = '#16110d' } = {}) {
 		});
 	}
 
-	return { write, stop, brush };
+	return { write, stop, brush, tip };
 }

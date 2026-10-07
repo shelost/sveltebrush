@@ -8,3 +8,6 @@ export { default as BrushLibrary } from './ui/BrushLibrary.svelte';
 export { default as BrushStudio } from './ui/BrushStudio.svelte';
 export { default as ColorWheel } from './ui/ColorWheel.svelte';
 export { default as Slider } from './ui/Slider.svelte';
+
+// Papers for `sveltebrush/paper.css`
+export { PAPERS, paperClass } from './papers.js';

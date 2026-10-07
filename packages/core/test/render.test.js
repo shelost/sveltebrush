@@ -7,6 +7,7 @@ import {
 	StrokeRenderer,
 	Surface,
 	Tape,
+	createWriter,
 	decodePoints,
 	encodePoints,
 	getStrokeBounds,
@@ -298,5 +299,24 @@ describe('surfaces', () => {
 		expect(renderer.bounds.x * 1.5).toBeCloseTo(Math.round(renderer.bounds.x * 1.5), 6);
 		expect(renderer.bounds.x).toBeLessThanOrEqual(bounds.x);
 		expect(renderer.bounds.x + renderer.bounds.width).toBeGreaterThanOrEqual(bounds.x + bounds.width);
+	});
+});
+
+describe('writer', () => {
+	it('reports where its brush is, hovering over each stroke before it starts', async () => {
+		const writer = createWriter(sheet());
+		/** @type {import('../src/index.js').WriterTip[]} */
+		const seen = [];
+		const watch = setInterval(() => seen.push({ ...writer.tip }), 4);
+		const finished = await writer.write('이', { width: 420, height: 200, lead: 80, speed: 4 });
+		clearInterval(watch);
+
+		expect(finished).toBe(true);
+		const hover = seen.find((tip) => tip.writing);
+		const down = seen.find((tip) => tip.down);
+		expect(hover?.down).toBe(false);
+		expect(down?.writing).toBe(true);
+		expect(Math.hypot((down?.x ?? 0) - (hover?.x ?? 0), (down?.y ?? 0) - (hover?.y ?? 0))).toBeLessThan(40);
+		expect(writer.tip).toMatchObject({ writing: false, down: false });
 	});
 });

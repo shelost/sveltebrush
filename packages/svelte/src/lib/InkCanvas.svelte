@@ -152,6 +152,18 @@
 		writer?.stop();
 	}
 
+	/**
+	 * Where the writer's brush is, in viewport px, for drawing a hand or brush over the writing.
+	 * @returns {import('@sveltebrush/core').WriterTip | null}
+	 */
+	export function scribe() {
+		const canvas = surface?.canvas;
+		if (!writer || !canvas || !('getBoundingClientRect' in canvas)) return null;
+		const { left, top } = canvas.getBoundingClientRect();
+		const { tip } = writer;
+		return { ...tip, x: left + tip.x, y: top + tip.y };
+	}
+
 	export function clear() {
 		writer?.stop();
 		surface?.clear();

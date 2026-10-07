@@ -6,11 +6,11 @@ Bristle brushes that run dry, split into flying white (飛白) and soak into pap
 
 **[Live demo](https://shelost.github.io/sveltebrush/)**
 
-| Package                                    | What it is                                                                                                                                                                    |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`@sveltebrush/core`](./packages/core)     | The engine, with no framework and no dependencies: brushes, strokes as data, input smoothing, the calligrapher, documents and timelapses. Runs in browsers, workers and Node. |
-| [`sveltebrush`](./packages/svelte)         | Svelte 5 components: `InkCanvas`, `Inkstone`, `BrushLibrary`, `BrushStudio`, `ColorWheel` and `Slider`. Re-exports everything from the core.                                  |
-| [`@sveltebrush/tldraw`](./packages/tldraw) | An ink-brush shape, tool and style panel for [tldraw](https://tldraw.dev).                                                                                                    |
+| Package                                    | What it is                                                                                                                                                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`@sveltebrush/core`](./packages/core)     | The engine, with no framework and no dependencies: brushes, strokes as data, input smoothing, the calligrapher, documents and timelapses. Runs in browsers, workers and Node.                                    |
+| [`sveltebrush`](./packages/svelte)         | Svelte 5 components: `InkCanvas`, `Inkstone`, `BrushLibrary`, `BrushStudio`, `ColorWheel`, `Slider`, five papers, and optional 3D brushes and inkstone in `sveltebrush/3d`. Re-exports everything from the core. |
+| [`@sveltebrush/tldraw`](./packages/tldraw) | An ink-brush shape, tool and style panel for [tldraw](https://tldraw.dev).                                                                                                                                       |
 
 ## Install
 
@@ -87,7 +87,7 @@ The core is plain ES modules with no dependencies, so it runs from a `<script ty
 </style>
 ```
 
-See the [`sveltebrush` README](./packages/svelte/README.md) for every prop and method.
+See the [`sveltebrush` README](./packages/svelte/README.md) for every prop and method, the papers (hanji, xuan, washi, sprinkled gold and practice paper), and `sveltebrush/3d`. That entry point adds a 3D brush that follows your pointer, a 3D inkstone with a palette of inks, and a red brush that flies in and writes whatever the calligrapher writes. It needs `three`, `@threlte/core` and `@threlte/extras`.
 
 ## tldraw
 

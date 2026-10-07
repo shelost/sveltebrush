@@ -21,6 +21,7 @@ export default defineConfig({
 		// Work on the packages' source directly, with hot reload and no build step.
 		alias: [
 			{ find: /^sveltebrush$/, replacement: source('svelte/src/lib/index.js') },
+			{ find: /^sveltebrush\/3d$/, replacement: source('svelte/src/lib/3d/index.js') },
 			{ find: /^sveltebrush\/paper\.css$/, replacement: source('svelte/src/lib/ui/paper.css') },
 			{ find: /^@sveltebrush\/core$/, replacement: source('core/src/index.js') }
 		]
